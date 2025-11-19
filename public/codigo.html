@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro de Membros</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    form {
+      max-width: 400px;
+      margin: 0 auto 30px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    form input, form button {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    form button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #218838;
+    }
+
+    #lista-membros {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .card img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .card h3 {
+      margin: 5px 0;
+    }
+
+    .card p {
+      margin: 3px 0;
+      color: #555;
+    }
+
+    .card button {
+      margin: 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .btn-editar {
+      background-color: #007bff;
+    }
+
+    .btn-editar:hover {
+      background-color: #0069d9;
+    }
+
+    .btn-excluir {
+      background-color: #dc3545;
+    }
+
+    .btn-excluir:hover {
+      background-color: #c82333;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>Cadastro de Membros</h1>
+
+  <form id="form-membro" enctype="multipart/form-data">
+    <input type="text" name="nome" placeholder="Nome" required />
+    <input type="email" name="email" placeholder="Email" required />
+    <input type="text" name="cargo" placeholder="Cargo" required />
+    <input type="text" name="telefone" placeholder="Telefone" required />
+    <input type="file" name="foto" accept="image/*" required />
+    <button type="submit">Cadastrar</button>
+  </form>
+
+  <h2>Lista de Membros</h2>
+  <div id="lista-membros"></div>
+
+  <script>
+    const form = document.getElementById("form-membro");
+    const lista = document.getElementById("lista-membros");
+
+    // Simulação de usuário logado
+    const isAdmin = true; // mudar para false se não for admin
+
+    // Atualiza lista de membros
+    function atualizarLista() {
+      fetch("/api/membros")
+        .then(res => res.json())
+        .then(membros => {
+          lista.innerHTML = "";
+          membros.forEach(membro => {
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+              <img src="${membro.foto}" alt="${membro.nome}" />
+              <h3>${membro.nome}</h3>
+              <p><strong>Cargo:</strong> ${membro.cargo}</p>
+              <p><strong>Email:</strong> ${membro.email}</p>
+              <p><strong>Telefone:</strong> ${membro.telefone}</p>
+            `;
+
+            // Apenas administradores veem os botões
+            if(isAdmin) {
+              const btnEditar = document.createElement("button");
+              btnEditar.className = "btn-editar";
+              btnEditar.textContent = "Editar";
+              btnEditar.onclick = () => editarMembro(membro._id);
+
+              const btnExcluir = document.createElement("button");
+              btnExcluir.className = "btn-excluir";
+              btnExcluir.textContent = "Excluir";
+              btnExcluir.onclick = () => excluirMembro(membro._id);
+
+              card.appendChild(btnEditar);
+              card.appendChild(btnExcluir);
+            }
+
+            lista.appendChild(card);
+          });
+        });
+    }
+
+    // Inicializa lista
+    atualizarLista();
+
+    // Submeter formulário
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const res = await fetch("/api/membros", {
+        method: "POST",
+        body: data
+      });
+      if(res.ok) {
+        form.reset();
+        atualizarLista();
+      } else {
+        alert("Erro ao cadastrar membro");
+      }
+    });
+
+    // Função para excluir membro (somente admin)
+    async function excluirMembro(id) {
+      if(!confirm("Deseja realmente excluir este membro?")) return;
+      const res = await fetch(`/api/membros/${id}`, {
+        method: "DELETE"
+      });
+      if(res.ok) {
+        atualizarLista();
+      } else {
+        alert("Erro ao excluir membro");
+      }
+    }
+
+    // Função para editar membro (somente admin)
+    async function editarMembro(id) {
+      const novoNome = prompt("Digite o novo nome do membro:");
+      if(!novoNome) return;
+      const res = await fetch(`/api/membros/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome: novoNome })
+      });
+      if(res.ok) {
+        atualizarLista();
+      } else {
+        alert("Erro ao editar membro");
+      }
+    }
+
+  </script>
+
+</body>
+</html>

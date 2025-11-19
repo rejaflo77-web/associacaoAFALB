@@ -1,0 +1,106 @@
+
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+     header {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
+      gap: 40px;
+     }
+
+     header img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+     }
+
+      nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 0 auto;
+      background-color: #2f7dcb;
+      padding: 15px 0px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: white;
+    }
+
+    nav a:hover {
+      background-color: coral;
+      border-radius: 5px;
+      width: 80px;
+      text-align: center;
+    }
+
+
+    header, footer {
+      background-color: #004080;
+      color: white;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    form {
+      max-width: 500px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 0.3rem;
+    }
+    button {
+      margin-top: 1.2rem;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004080;
+    }
+    .membros-lista {
+      max-width: 800px;
+      margin: 2rem auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .membro {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .membro img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 1rem;
+    }
+ 
