@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Membros - Associação Filhos e Amigos de Luanda - Bolama</title>
-  <link rel="stylesheet" href="menb.css">
+  <link rel="stylesheet" href="menb.css" />
 </head>
 <body>
   <header>
-    <img src="./img/luand.png" alt="logotipo">
+    <img src="./img/luand.png" alt="logotipo" />
     <h1>Registo de Membros</h1>
   </header>
-   <nav>
+
+  <nav>
     <a href="index.html">MISSÃO</a>
     <a href="quota.html">QUOTA</a>
     <a href="membros.html">MEMBROS</a>
@@ -21,16 +22,17 @@
 
   <form id="formMembro" enctype="multipart/form-data">
     <legend>Preenche o Formulário</legend>
+
     <label>Nome:</label>
-    <input type="text" name="nome" required>
+    <input type="text" name="nome" required />
 
     <label>Email:</label>
-    <input type="email" name="email" required>
+    <input type="email" name="email" required />
 
     <label>Função / Cargo:</label>
-    <input type="text" name="cargo">
+    <input type="text" name="cargo" />
 
-    <label for="pais">País de Residênçia:</label>
+    <label for="pais">País de Residência:</label>
     <select id="pais" name="pais" required>
       <option value="">----selecione o País----</option>
       <option value="Guiné-Bissau">Guiné-Bissau</option>
@@ -45,11 +47,11 @@
       <option value="América">América</option>
     </select>
 
-    <label for="">Telefone</label>
-    <input type="text" name="telefone" required>
+    <label>Telefone</label>
+    <input type="text" name="telefone" required />
 
     <label>Foto:</label>
-    <input type="file" name="foto" accept="image/*" required>
+    <input type="file" name="foto" accept="image/*" required />
 
     <button type="submit">Adicionar Membro</button>
   </form>
@@ -57,69 +59,82 @@
   <section class="membros-lista" id="listaMembros"></section>
 
   <script>
-  const form = document.getElementById("formMembro");
-  const lista = document.getElementById("listaMembros");
+    // 🔧 ALTERAR AQUI PARA O URL DO TEU BACKEND NO RAILWAY
+    const BACKEND_URL = "https://teu-backend-url.railway.app";
 
-  async function carregarMembros() {
-    const res = await fetch("/api/membros");
-    const membros = await res.json();
+    const form = document.getElementById("formMembro");
+    const lista = document.getElementById("listaMembros");
 
-    lista.innerHTML = membros
-      .map(
-        (m) => `
+    async function carregarMembros() {
+      const res = await fetch(`${BACKEND_URL}/api/membros`);
+      const membros = await res.json();
+
+      lista.innerHTML = membros
+        .map(
+          (m) => `
         <div class="membro">
-          <img src="${m.foto}" alt="${m.nome}" />
+          <img src="${BACKEND_URL + m.foto}" alt="${m.nome}" />
           <h3>${m.nome}</h3>
-          <p><strong>Cargo:</strong> ${m.cargo}</p>
+          <p><strong>Cargo:</strong> ${m.cargo || ""}</p>
           <p><strong>Email:</strong> ${m.email}</p>
-          <p><strong>País de Residência:</strong>${m.pais}</p>
+          <p><strong>País:</strong> ${m.pais}</p>
           <p><strong>Telefone:</strong> ${m.telefone}</p>
           <button onclick="editarMembro('${m._id}')">Editar</button>
           <button onclick="apagarMembro('${m._id}')">Eliminar</button>
         </div>`
-      )
-      .join("");
-  }
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    await fetch("/api/membros", { method: "POST", body: formData });
-    form.reset();
-    carregarMembros();
-  });
-
-  async function apagarMembro(id) {
-    if (confirm("Tem a certeza que quer eliminar este membro?")) {
-      await fetch(`/api/membros/${id}`, { method: "DELETE" });
-      carregarMembros();
+        )
+        .join("");
     }
-  }
 
-  async function editarMembro(id) {
-    const nome = prompt("Novo nome:");
-    const email = prompt("Novo email:");
-    const cargo = prompt("Novo cargo:");
-    const pais = prompt("Novo pais:");
-    const telefone = prompt("Novo telefone:");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
 
-    if (!nome || !email || !telefone) return alert("Preencha todos os campos!");
+      await fetch(`${BACKEND_URL}/api/membros`, {
+        method: "POST",
+        body: formData,
+      });
 
-    await fetch(`/api/membros/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, email, cargo, pais, telefone })
+      form.reset();
+      carregarMembros();
     });
 
+    async function apagarMembro(id) {
+      if (!confirm("Tem a certeza que quer eliminar este membro?")) return;
+
+      await fetch(`${BACKEND_URL}/api/membros/${id}`, {
+        method: "DELETE",
+      });
+
+      carregarMembros();
+    }
+
+    async function editarMembro(id) {
+      const nome = prompt("Novo nome:");
+      const email = prompt("Novo email:");
+      const cargo = prompt("Novo cargo:");
+      const pais = prompt("Novo país:");
+      const telefone = prompt("Novo telefone:");
+
+      if (!nome || !email || !telefone) return alert("Preencha todos os campos obrigatórios.");
+
+      await fetch(`${BACKEND_URL}/api/membros/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, email, cargo, pais, telefone }),
+      });
+
+      carregarMembros();
+    }
+
     carregarMembros();
-  }
+  </script>
 
-  carregarMembros();
-</script>
-
-</body>
-<footer>
-    <p>&copy; 2025 Associação dos Filho e Amigos de Luanda Bolama — Todos os direitos reservados</p>
+  <footer>
+    <p>&copy; 2025 Associação dos Filhos e Amigos de Luanda Bolama — Todos os direitos reservados</p>
   </footer>
-
+</body>
 </html>
+
+
+

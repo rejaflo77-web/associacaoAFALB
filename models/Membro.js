@@ -1,14 +1,13 @@
- 
- const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
-const membroSchema = new mongoose.Schema({
-  nome: String,
-  email: String,
+const MembroSchema = new mongoose.Schema({
+  nome: { type: String, required: true },
+  email: { type: String, required: true },
   cargo: String,
   pais: String,
-  telefone: String,
+  telefone: { type: String, required: true },
   foto: String,
 });
 
-module.exports = mongoose.model("Membro", membroSchema);
+module.exports = mongoose.model("Membro", MembroSchema);
 

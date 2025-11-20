@@ -7,122 +7,108 @@
   <link rel="stylesheet" href="quota.css">
 </head>
 <body>
-   <header>
-    <img src="./img/luand.png" alt="logotipo">
-    <h1>Quota dos associados</h1>
-  </header>
 
-  <nav>
-    <a href="index.html">MISSÃO</a>
-    <a href="quota.html">QUOTA</a>
-    <a href="membros.html">MEMBROS</a>
-    <a href="estatuto.html">ESTATUTO</a>
-    <a href="metas.html">META</a>
-  </nav>
+<header>
+  <img src="./img/luand.png" alt="logotipo">
+  <h1>Quota dos Associados</h1>
+</header>
 
-  <!-- Formulário protegido -->
-<h3>Adicionar Registo (Admin)</h3>
+<nav>
+  <a href="index.html">MISSÃO</a>
+  <a href="quota.html">QUOTA</a>
+  <a href="membros.html">MEMBROS</a>
+  <a href="estatuto.html">ESTATUTO</a>
+  <a href="metas.html">META</a>
+</nav>
 
-<form id="formAdmin">
-  <label>Código de Administrador:</label>
-  <input type="password" id="adminCodigo" required>
+<main>
+  <!-- Formulário Admin -->
+  <h3>Adicionar Registo (Admin)</h3>
+  <form id="formAdmin">
+    <label>Código de Administrador:</label>
+    <input type="password" id="adminCodigo" required placeholder="Código secreto">
 
-  <label>Nome do membro:</label>
-  <input type="text" id="adminNome" required>
+    <label>Nome do membro:</label>
+    <input type="text" id="adminNome" required placeholder="Nome completo">
 
-  <label>Ano:</label>
-  <input type="number" id="adminAno" min="2023" max="2100" required>
+    <label>Ano:</label>
+    <input type="number" id="adminAno" min="2023" max="2100" required>
 
-  <label>Valor pago:</label>
-  <input type="number" id="adminValor" required>
+    <label>Valor pago:</label>
+    <input type="number" id="adminValor" min="0" step="0.01" required>
 
-  <button type="submit">Adicionar</button>
-</form>
+    <button type="submit">Adicionar</button>
+  </form>
 
-<!-- Tabela de quotas -->
-<h2>Lista das quotas dos associados/as </h2>
+  <!-- Tabela de Quotas -->
+  <h2>Lista das Quotas dos Associados</h2>
+  <table id="tabelaQuotas">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Ano</th>
+        <th>Valor</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</main>
 
-
-<table id="tabelaQuotas">
-  <thead>
-    <tr>
-      <th>Nome</th>
-      <th>Ano</th>
-      <th>Valor</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<footer>
+  <p>&copy; 2025 Associação dos Filhos e Amigos de Luanda Bolama — Todos os direitos reservados</p>
+</footer>
 
 <script>
-const codigoAdmin = "luandaBolama";
-
 async function carregarQuotas() {
-  const res = await fetch("/api/quotas");
-  const quotas = await res.json();
+  try {
+    const res = await fetch("/api/quotas");
+    const quotas = await res.json();
 
-  const tbody = document.querySelector("#tabelaQuotas tbody");
-  tbody.innerHTML = "";
+    const tbody = document.querySelector("#tabelaQuotas tbody");
+    tbody.innerHTML = "";
 
-  quotas.forEach(q => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${q.nome}</td>
-        <td>${q.ano}</td>
-        <td>${q.valor}</td>
-      </tr>`;
-  });
+    quotas.forEach(q => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${q.nome}</td><td>${q.ano}</td><td>${q.valor}</td>`;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    console.error("Erro ao carregar quotas:", err);
+  }
 }
 
 document.getElementById("formAdmin").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const codigo = document.getElementById("adminCodigo").value;
-  const nome = document.getElementById("adminNome").value;
-  const ano = document.getElementById("adminAno").value;
-  const valor = document.getElementById("adminValor").value;
+  const codigo = document.getElementById("adminCodigo").value.trim();
+  const nome = document.getElementById("adminNome").value.trim();
+  const ano = Number(document.getElementById("adminAno").value);
+  const valor = Number(document.getElementById("adminValor").value);
 
-  if (codigo !== codigoAdmin) {
-    alert("Código de administrador incorreto!");
-    return;
+  try {
+    const res = await fetch("/api/quotas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, ano, valor, codigo })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.message);
+      return;
+    }
+
+    alert("Registo adicionado com sucesso!");
+    e.target.reset();
+    carregarQuotas();
+  } catch (err) {
+    console.error("Erro ao enviar formulário:", err);
   }
-
-  await fetch("/api/quotas", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nome, ano, valor, codigo })
-  });
-
-  alert("Registo adicionado com sucesso!");
-  e.target.reset();
-  carregarQuotas();
-});
-
-document.getElementById("formQuota").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const nome = document.getElementById("quotaNome").value;
-  const ano = document.getElementById("quotaAno").value;
-  const valor = document.getElementById("quotaValor").value;
-
-  await fetch("/api/quotas", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nome, ano, valor })
-  });
-
-  e.target.reset();
-  carregarQuotas();
 });
 
 carregarQuotas();
 </script>
 
-
-
 </body>
-<footer>
-    <p>&copy; 2025 Associação dos Filho e Amigos de Luanda Bolama — Todos os direitos reservados</p>
-  </footer>
-
 </html>
