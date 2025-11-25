@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Membros - Associação Filhos e Amigos de Luanda - Bolama</title>
+  <title>Membros de Associação dos Filhos e Amigos de Luanda - Bolama</title>
   <link rel="stylesheet" href="menb.css" />
 </head>
 <body>
@@ -58,32 +59,57 @@
 
   <section class="membros-lista" id="listaMembros"></section>
 
+  <!-- Modal de edição -->
+  <div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#0008; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:20px; border-radius:10px; width:350px;">
+      <h3>Editar Membro</h3>
+      <form id="formEditar">
+        <input type="hidden" name="id" />
+        <label>Nome:</label>
+        <input type="text" name="nome" required />
+
+        <label>Email:</label>
+        <input type="email" name="email" required />
+
+        <label>Cargo:</label>
+        <input type="text" name="cargo" />
+
+        <label>País:</label>
+        <input type="text" name="pais" required />
+
+        <label>Telefone:</label>
+        <input type="text" name="telefone" required />
+
+        <button type="submit">Guardar Alterações</button>
+        <button type="button" onclick="fecharModal()">Cancelar</button>
+      </form>
+    </div>
+  </div>
+
   <script>
-    // 🔧 ALTERAR AQUI PARA O URL DO TEU BACKEND NO RAILWAY
-    const BACKEND_URL = "https://teu-backend-url.railway.app";
+    const BACKEND_URL = "http://localhost:3000"; // mude para URL do Render quando subir online
 
     const form = document.getElementById("formMembro");
     const lista = document.getElementById("listaMembros");
+    const modal = document.getElementById("modal");
+    const formEditar = document.getElementById("formEditar");
 
     async function carregarMembros() {
       const res = await fetch(`${BACKEND_URL}/api/membros`);
       const membros = await res.json();
 
-      lista.innerHTML = membros
-        .map(
-          (m) => `
+      lista.innerHTML = membros.map(m => `
         <div class="membro">
-          <img src="${BACKEND_URL + m.foto}" alt="${m.nome}" />
+          <img src="${m.foto}" alt="${m.nome}" style="width:100px; height:100px; object-fit:cover;" />
           <h3>${m.nome}</h3>
           <p><strong>Cargo:</strong> ${m.cargo || ""}</p>
           <p><strong>Email:</strong> ${m.email}</p>
           <p><strong>País:</strong> ${m.pais}</p>
           <p><strong>Telefone:</strong> ${m.telefone}</p>
-          <button onclick="editarMembro('${m._id}')">Editar</button>
-          <button onclick="apagarMembro('${m._id}')">Eliminar</button>
-        </div>`
-        )
-        .join("");
+          <button onclick="abrirModal('${m.id}', '${m.nome}', '${m.email}', '${m.cargo}', '${m.pais}', '${m.telefone}')">Editar</button>
+          <button onclick="apagarMembro('${m.id}')">Eliminar</button>
+        </div>
+      `).join("");
     }
 
     form.addEventListener("submit", async (e) => {
@@ -92,7 +118,7 @@
 
       await fetch(`${BACKEND_URL}/api/membros`, {
         method: "POST",
-        body: formData,
+        body: formData
       });
 
       form.reset();
@@ -102,30 +128,45 @@
     async function apagarMembro(id) {
       if (!confirm("Tem a certeza que quer eliminar este membro?")) return;
 
-      await fetch(`${BACKEND_URL}/api/membros/${id}`, {
-        method: "DELETE",
-      });
-
+      await fetch(`${BACKEND_URL}/api/membros/${id}`, { method: "DELETE" });
       carregarMembros();
     }
 
-    async function editarMembro(id) {
-      const nome = prompt("Novo nome:");
-      const email = prompt("Novo email:");
-      const cargo = prompt("Novo cargo:");
-      const pais = prompt("Novo país:");
-      const telefone = prompt("Novo telefone:");
+    function abrirModal(id, nome, email, cargo, pais, telefone) {
+      modal.style.display = "flex";
+      formEditar.id.value = id;
+      formEditar.nome.value = nome;
+      formEditar.email.value = email;
+      formEditar.cargo.value = cargo;
+      formEditar.pais.value = pais;
+      formEditar.telefone.value = telefone;
+    }
 
-      if (!nome || !email || !telefone) return alert("Preencha todos os campos obrigatórios.");
+    function fecharModal() {
+      modal.style.display = "none";
+    }
+
+    formEditar.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = formEditar.id.value;
+
+      const body = {
+        nome: formEditar.nome.value,
+        email: formEditar.email.value,
+        cargo: formEditar.cargo.value,
+        pais: formEditar.pais.value,
+        telefone: formEditar.telefone.value,
+      };
 
       await fetch(`${BACKEND_URL}/api/membros/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, email, cargo, pais, telefone }),
+        body: JSON.stringify(body)
       });
 
+      fecharModal();
       carregarMembros();
-    }
+    });
 
     carregarMembros();
   </script>
@@ -135,6 +176,3 @@
   </footer>
 </body>
 </html>
-
-
-
