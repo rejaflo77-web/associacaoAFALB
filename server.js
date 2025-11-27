@@ -52,40 +52,47 @@ const upload = multer({ storage });
 // ROTAS
 // criar membro
 app.post("/api/membros", upload.single("foto"), async (req, res) => {
-  const novo = new Membro({
-    nome: req.body.nome,
-    email: req.body.email,
-    cargo: req.body.cargo,
-    pais: req.body.pais,
-    telefone: req.body.telefone,
-    /*foto: req.file ? `/uploads/${req.file.filename}` : null,*/
-    foto: m.foto ? `${req.protocol}://${req.get("host")}${m.foto}` : null
+  try {
+    const novo = new Membro({
+      nome: req.body.nome,
+      email: req.body.email,
+      cargo: req.body.cargo,
+      pais: req.body.pais,
+      telefone: req.body.telefone,
+      foto: req.file ? `/uploads/${req.file.filename}` : null
+    });
 
-  });
+    await novo.save();
+    res.json({ message: "Membro criado", data: novo });
 
-  await novo.save();
-  res.json({ message: "Membro criado", data: novo });
+  } catch (error) {
+    console.error("Erro ao criar membro:", error);
+    res.status(500).json({ erro: "Erro ao criar membro" });
+  }
 });
+
 
 // listar membros
-app.get("/api/membros", async (req, res) => {
-  const membros = await Membro.find();
-  res.json(membros.map(m => ({
-    id: m._id,
-    nome: m.nome,
-    email: m.email,
-    cargo: m.cargo,
-    pais: m.pais,
-    telefone: m.telefone,
-    foto: m.foto ? `http://localhost:3000${m.foto}` : null
-  })));
+app.post("/api/membros", upload.single("foto"), async (req, res) => {
+  try {
+    const novo = new Membro({
+      nome: req.body.nome,
+      email: req.body.email,
+      cargo: req.body.cargo,
+      pais: req.body.pais,
+      telefone: req.body.telefone,
+      foto: m.file ? `/uploads/${req.file.filename}` : null
+    });
+
+    await novo.save();
+    res.json({ message: "Membro criado", data: novo });
+
+  } catch (error) {
+    console.error("Erro ao criar membro:", error);
+    res.status(500).json({ erro: "Erro ao criar membro" });
+  }
 });
 
-// apagar membro
-app.delete("/api/membros/:id", async (req, res) => {
-  await Membro.findByIdAndDelete(req.params.id);
-  res.json({ message: "Membro eliminado" });
-});
 
 // editar membro
 app.put("/api/membros/:id", async (req, res) => {
