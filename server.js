@@ -58,7 +58,9 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
     cargo: req.body.cargo,
     pais: req.body.pais,
     telefone: req.body.telefone,
-    foto: req.file ? `/uploads/${req.file.filename}` : null,
+    /*foto: req.file ? `/uploads/${req.file.filename}` : null,*/
+    foto: m.foto ? `${req.protocol}://${req.get("host")}${m.foto}` : null
+
   });
 
   await novo.save();
