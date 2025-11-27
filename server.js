@@ -101,6 +101,17 @@ app.put("/api/membros/:id", async (req, res) => {
   }
 });
 
+// ✅ APAGAR MEMBRO
+app.delete("/api/membros/:id", async (req, res) => {
+  try {
+    await Membro.findByIdAndDelete(req.params.id);
+    res.json({ message: "Membro eliminado com sucesso" });
+  } catch (error) {
+    res.status(500).json({ erro: "Erro ao eliminar membro" });
+  }
+});
+
+
 // ✅ Rota principal
 app.get("/", (req, res) => {
   res.send("API rodando! Use /api/membros para acessar os membros.");
