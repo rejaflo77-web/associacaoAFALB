@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 console.log("MONGO_URI =", process.env.MONGO_URI);
 
 const express = require("express");
@@ -11,46 +11,41 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// servir fotos
+// ✅ Servir imagens da pasta uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// conectar MongoDB
-
-mongoose.connect(process.env.MONGO_URI)
+// ✅ Conectar ao MongoDB
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB conectado com sucesso!"))
   .catch(err => console.error("❌ Erro ao conectar no MongoDB:", err));
 
-
-/*
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB conectado!"))
-.catch(err => console.log(err));*/
-
-// modelo
+// ✅ Modelo Membro
 const MembroSchema = new mongoose.Schema({
   nome: String,
   email: String,
   cargo: String,
   pais: String,
   telefone: String,
-  foto: String, // URL da imagem
+  foto: String
 });
 
 const Membro = mongoose.model("Membro", MembroSchema);
 
-// configurar upload de imagem
+// ✅ Configuração do upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/"),
   filename: (req, file, cb) =>
-    cb(null, Date.now() + path.extname(file.originalname)),
+    cb(null, Date.now() + path.extname(file.originalname))
 });
+
 const upload = multer({ storage });
 
-// ROTAS
-// criar membro
+// ===================================================
+// ✅ ROTAS
+// ===================================================
+
+// ✅ CRIAR MEMBRO
 app.post("/api/membros", upload.single("foto"), async (req, res) => {
   try {
     const novo = new Membro({
@@ -63,8 +58,7 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
     });
 
     await novo.save();
-    res.json({ message: "Membro criado", data: novo });
-
+    res.json({ message: "Membro criado com sucesso", data: novo });
   } catch (error) {
     console.error("Erro ao criar membro:", error);
     res.status(500).json({ erro: "Erro ao criar membro" });
@@ -72,39 +66,52 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
 });
 
 
-// listar membros
-app.post("/api/membros", upload.single("foto"), async (req, res) => {
+// ✅ LISTAR MEMBROS  ✅ (ESSA ROTA FALTAVA!)
+app.get("/api/membros", async (req, res) => {
   try {
-    const novo = new Membro({
-      nome: req.body.nome,
-      email: req.body.email,
-      cargo: req.body.cargo,
-      pais: req.body.pais,
-      telefone: req.body.telefone,
-      foto: m.file ? `/uploads/${req.file.filename}` : null
-    });
+    const membros = await Membro.find();
 
-    await novo.save();
-    res.json({ message: "Membro criado", data: novo });
+    const resultado = membros.map(m => ({
+      id: m._id,
+      nome: m.nome,
+      email: m.email,
+      cargo: m.cargo,
+      pais: m.pais,
+      telefone: m.telefone,
+      foto: m.foto
+        ? `${req.protocol}://${req.get("host")}${m.foto}`
+        : null
+    }));
 
+    res.json(resultado);
   } catch (error) {
-    console.error("Erro ao criar membro:", error);
-    res.status(500).json({ erro: "Erro ao criar membro" });
+    console.error("Erro ao buscar membros:", error);
+    res.status(500).json({ erro: "Erro ao buscar membros" });
   }
 });
 
 
-// editar membro
+// ✅ EDITAR MEMBRO
 app.put("/api/membros/:id", async (req, res) => {
-  await Membro.findByIdAndUpdate(req.params.id, req.body);
-  res.json({ message: "Membro atualizado" });
+  try {
+    await Membro.findByIdAndUpdate(req.params.id, req.body);
+    res.json({ message: "Membro atualizado com sucesso" });
+  } catch (error) {
+    res.status(500).json({ erro: "Erro ao atualizar membro" });
+  }
 });
 
+// ✅ Rota principal
 app.get("/", (req, res) => {
   res.send("API rodando! Use /api/membros para acessar os membros.");
 });
+
+// ✅ Porta do Render ou local
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
+app.listen(PORT, () =>
+  console.log("Servidor rodando na porta " + PORT)
+);
+
 
 
 /*app.listen(3000, () => console.log("Servidor rodando na porta 3000"));*/
