@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Membros de Associação dos Filhos e Amigos de Luanda - Bolama</title>
   <link rel="stylesheet" href="menb.css" />
+  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+
 </head>
 <body>
   <header>
@@ -113,16 +115,17 @@
         <p><strong>País:</strong> ${m.pais}</p>
         <p><strong>Telefone:</strong> ${m.telefone}</p>
 
-        <button onclick="abrirModal(
-          '${m.id}',
-          '${m.nome}',
-          '${m.email}',
-          '${m.cargo || ""}',
-          '${m.pais}',
-          '${m.telefone}'
-        )">Editar</button>
+      <button onclick="abrirModal(
+        '${m._id}',
+        '${m.nome}',
+        '${m.email}',
+        '${m.cargo || ""}',
+        '${m.pais}',
+        '${m.telefone}'
+      )">Editar</button>
 
-        <button onclick="apagarMembro('${m.id}')">Eliminar</button>
+      <button onclick="apagarMembro('${m._id}')">Eliminar</button>
+
       </div>
     `).join("");
   }

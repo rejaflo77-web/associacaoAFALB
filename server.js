@@ -1,5 +1,3 @@
-
-
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -12,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ---------------- CLOUDINARY ----------------
+// Configuração Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_API_KEY,
@@ -29,14 +27,12 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-
-// ---------------- MONGODB ----------------
-mongoose
-  .connect(process.env.MONGO_URI)
+// Conexão MongoDB
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB conectado com sucesso!"))
-  .catch((err) => console.error("❌ Erro MongoDB:", err));
+  .catch(err => console.error("❌ Erro MongoDB:", err));
 
-// ---------------- MODELO ----------------
+// Modelo
 const MembroSchema = new mongoose.Schema({
   nome: String,
   email: String,
@@ -48,22 +44,26 @@ const MembroSchema = new mongoose.Schema({
 
 const Membro = mongoose.model("Membro", MembroSchema);
 
-// ---------------- ROTAS ----------------
+// Rotas
 
-// ✅ CRIAR MEMBRO
+// Criar membro
 app.post("/api/membros", upload.single("foto"), async (req, res) => {
+        console.log("req.body:", req.body);
+        console.log("req.file:", req.file);
   try {
+    console.log("Recebido:", req.body, req.file); // log para depuração
     const novo = new Membro({
       nome: req.body.nome,
       email: req.body.email,
       cargo: req.body.cargo,
       pais: req.body.pais,
       telefone: req.body.telefone,
-      foto: req.file ? req.file.path : null, // URL do Cloudinary
+      foto: req.file?.path || null,
     });
 
-    await novo.save();
-    res.json({ message: "Membro criado", data: novo });
+    const salvo = await novo.save();
+    console.log("Salvo:", salvo);
+    res.json(salvo);
 
   } catch (error) {
     console.error("Erro ao criar membro:", error);
@@ -71,28 +71,22 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
   }
 });
 
-// ✅ LISTAR MEMBROS
+// Listar membros
 app.get("/api/membros", async (req, res) => {
   const membros = await Membro.find();
   res.json(membros);
 });
 
-// ✅ ATUALIZAR MEMBRO
+// Atualizar membro
 app.put("/api/membros/:id", async (req, res) => {
   await Membro.findByIdAndUpdate(req.params.id, req.body);
   res.json({ message: "Atualizado com sucesso" });
 });
 
-// ✅ APAGAR MEMBRO
+// Apagar membro
 app.delete("/api/membros/:id", async (req, res) => {
   await Membro.findByIdAndDelete(req.params.id);
   res.json({ message: "Removido com sucesso" });
 });
 
-// ✅ ROTA TESTE
-app.get("/", (req, res) => {
-  res.send("✅ API rodando com Cloudinary!");
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
+app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
