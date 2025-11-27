@@ -1,3 +1,6 @@
+require('dotenv').config();
+console.log("MONGO_URI =", process.env.MONGO_URI);
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -12,9 +15,19 @@ app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // conectar MongoDB
-mongoose.connect("mongodb://localhost:27017/associacao")
-  .then(() => console.log("MongoDB conectado"))
-  .catch(err => console.log(err));
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB conectado com sucesso!"))
+  .catch(err => console.error("❌ Erro ao conectar no MongoDB:", err));
+
+
+/*
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("MongoDB conectado!"))
+.catch(err => console.log(err));*/
 
 // modelo
 const MembroSchema = new mongoose.Schema({
@@ -78,5 +91,12 @@ app.put("/api/membros/:id", async (req, res) => {
   res.json({ message: "Membro atualizado" });
 });
 
-app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
+app.get("/", (req, res) => {
+  res.send("API rodando! Use /api/membros para acessar os membros.");
+});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Servidor rodando na porta " + PORT));
+
+
+/*app.listen(3000, () => console.log("Servidor rodando na porta 3000"));*/
 
