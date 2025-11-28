@@ -6,9 +6,12 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 
-const app = express();
+const app = express(); // ✅ ESTAVA A FALTAR
+
+// Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Configuração Cloudinary
 cloudinary.config({
@@ -32,7 +35,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB conectado com sucesso!"))
   .catch(err => console.error("❌ Erro MongoDB:", err));
 
-// Modelo
+// ✅ MODEL ESTAVA A FALTAR
 const MembroSchema = new mongoose.Schema({
   nome: String,
   email: String,
@@ -45,13 +48,8 @@ const MembroSchema = new mongoose.Schema({
 const Membro = mongoose.model("Membro", MembroSchema);
 
 // Rotas
-
-// Criar membro
 app.post("/api/membros", upload.single("foto"), async (req, res) => {
-        console.log("req.body:", req.body);
-        console.log("req.file:", req.file);
   try {
-    console.log("Recebido:", req.body, req.file); // log para depuração
     const novo = new Membro({
       nome: req.body.nome,
       email: req.body.email,
@@ -62,7 +60,6 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
     });
 
     const salvo = await novo.save();
-    console.log("Salvo:", salvo);
     res.json(salvo);
 
   } catch (error) {
@@ -71,22 +68,21 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
   }
 });
 
-// Listar membros
 app.get("/api/membros", async (req, res) => {
   const membros = await Membro.find();
   res.json(membros);
 });
 
-// Atualizar membro
 app.put("/api/membros/:id", async (req, res) => {
   await Membro.findByIdAndUpdate(req.params.id, req.body);
   res.json({ message: "Atualizado com sucesso" });
 });
 
-// Apagar membro
 app.delete("/api/membros/:id", async (req, res) => {
   await Membro.findByIdAndDelete(req.params.id);
   res.json({ message: "Removido com sucesso" });
 });
 
-app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
+// ✅ Porta correta para Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("✅ Servidor rodando na porta " + PORT));

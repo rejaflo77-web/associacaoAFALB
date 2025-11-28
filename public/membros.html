@@ -3,205 +3,202 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Membros de Associação dos Filhos e Amigos de Luanda - Bolama</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="menb.css" />
   <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-
 </head>
+
 <body>
-  <header>
-    <img src="./img/luand.png" alt="logotipo" />
-    <h1>Registo de Membros</h1>
-  </header>
 
-  <nav>
-    <a href="index.html">MISSÃO</a>
-    <a href="quota.html">QUOTA</a>
-    <a href="membros.html">MEMBROS</a>
-    <a href="estatuto.html">ESTATUTO</a>
-    <a href="metas.html">META</a>
-  </nav>
+<header>
+  <img src="./img/luand.png" alt="logotipo" />
+  <h1>Registo de Membros</h1>
+</header>
 
-  <form id="formMembro" enctype="multipart/form-data">
-    <legend>Preenche o Formulário</legend>
+<nav>
+  <a href="index.html">MISSÃO</a>
+  <a href="quota.html">QUOTA</a>
+  <a href="membros.html">MEMBROS</a>
+  <a href="estatuto.html">ESTATUTO</a>
+  <a href="metas.html">META</a>
+</nav>
 
-    <label>Nome:</label>
-    <input type="text" name="nome" required />
+<form id="formMembro" enctype="multipart/form-data">
+  <legend>Preenche o Formulário</legend>
 
-    <label>Email:</label>
-    <input type="email" name="email" required />
+  <label>Nome:</label>
+  <input type="text" name="nome" required />
 
-    <label>Função / Cargo:</label>
-    <input type="text" name="cargo" />
+  <label>Email:</label>
+  <input type="email" name="email" required />
 
-    <label for="pais">País de Residência:</label>
-    <select id="pais" name="pais" required>
-      <option value="">----selecione o País----</option>
-      <option value="Guiné-Bissau">Guiné-Bissau</option>
-      <option value="Senegal">Senegal</option>
-      <option value="Gâmbia">Gambia</option>
-      <option value="Portugal">Portugal</option>
-      <option value="França">França</option>
-      <option value="Espanha">Espanha</option>
-      <option value="Holanda">Holanda</option>
-      <option value="Belgica">Belgica</option>
-      <option value="Brasil">Brasil</option>
-      <option value="América">América</option>
-    </select>
+  <label>Cargo:</label>
+  <input type="text" name="cargo" />
 
-    <label>Telefone</label>
-    <input type="text" name="telefone" required />
+  <label>País:</label>
+  <select name="pais" required>
+    <option value="">---- selecione ----</option>
+    <option value="Guiné-Bissau">Guiné-Bissau</option>
+    <option value="Senegal">Senegal</option>
+    <option value="Gambia">Gambia</option>
+    <option value="Portugal">Portugal</option>
+    <option value="França">França</option>
+    <option value="Espanha">Espanha</option>
+    <option value="Holanda">Holanda</option>
+    <option value="Belgica">Belgica</option>
+    <option value="Brasil">Brasil</option>
+    <option value="América">América</option>
+  </select>
 
-    <label>Foto:</label>
-    <input type="file" name="foto" accept="image/*" required />
+  <label>Telefone:</label>
+  <input type="text" name="telefone" required />
 
-    <button type="submit">Adicionar Membro</button>
-  </form>
+  <label>Foto:</label>
+  <input type="file" name="foto" accept="image/*" required />
 
-  <section class="membros-lista" id="listaMembros"></section>
+  <button type="submit">Adicionar Membro</button>
+</form>
 
-  <!-- Modal de edição -->
-  <div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#0008; align-items:center; justify-content:center;">
-    <div style="background:#fff; padding:20px; border-radius:10px; width:350px;">
-      <h3>Editar Membro</h3>
-      <form id="formEditar">
-        <input type="hidden" name="id" />
-        <label>Nome:</label>
-        <input type="text" name="nome" required />
+<section class="membros-lista" id="listaMembros"></section>
 
-        <label>Email:</label>
-        <input type="email" name="email" required />
+<!-- MODAL -->
+<div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+  <div style="background:#fff; padding:20px; border-radius:10px; width:350px;">
+    <h3>Editar Membro</h3>
 
-        <label>Cargo:</label>
-        <input type="text" name="cargo" />
+    <form id="formEditar">
+      <input type="hidden" id="editId" />
 
-        <label>País:</label>
-        <input type="text" name="pais" required />
+      <label>Nome:</label>
+      <input type="text" id="editNome" required />
 
-        <label>Telefone:</label>
-        <input type="text" name="telefone" required />
+      <label>Email:</label>
+      <input type="email" id="editEmail" required />
 
-        <button type="submit">Guardar Alterações</button>
-        <button type="button" onclick="fecharModal()">Cancelar</button>
-      </form>
-    </div>
+      <label>Cargo:</label>
+      <input type="text" id="editCargo" />
+
+      <label>País:</label>
+      <input type="text" id="editPais" required />
+
+      <label>Telefone:</label>
+      <input type="text" id="editTelefone" required />
+
+      <button type="submit">Guardar</button>
+      <button type="button" onclick="fecharModal()">Cancelar</button>
+    </form>
   </div>
+</div>
 
-  <script>
-  // ✅ URL CORRETA DO RENDER
-   const BACKEND_URL = "https://associacaoafalb-4.onrender.com";
+<footer>
+  <p>&copy; 2025 Associação dos Filhos e Amigos de Luanda Bolama</p>
+</footer>
 
+<script>
+const BACKEND_URL = "https://associacaoafalb-4.onrender.com";
 
-  const form = document.getElementById("formMembro");
-  const lista = document.getElementById("listaMembros");
-  const modal = document.getElementById("modal");
-  const formEditar = document.getElementById("formEditar");
+const form = document.getElementById("formMembro");
+const lista = document.getElementById("listaMembros");
+const modal = document.getElementById("modal");
 
-  // ✅ CARREGAR MEMBROS
-  async function carregarMembros() {
-    const res = await fetch(`${BACKEND_URL}/api/membros`);
-    const membros = await res.json();
+// =============== CARREGAR MEMBROS ==================
+async function carregarMembros() {
+  const res = await fetch(`${BACKEND_URL}/api/membros`);
+  const membros = await res.json();
 
-    lista.innerHTML = membros.map(m => `
-      <div class="membro">
-        <img src="${m.foto || 'https://via.placeholder.com/100'}"
-             alt="${m.nome}"
-             style="width:100px; height:100px; object-fit:cover;" />
+  lista.innerHTML = membros.map(m => `
+    <div class="membro">
+      <img src="${m.foto || 'https://via.placeholder.com/100'}"
+           style="width:100px; height:100px; object-fit:cover" />
 
-        <h3>${m.nome}</h3>
-        <p><strong>Cargo:</strong> ${m.cargo || ""}</p>
-        <p><strong>Email:</strong> ${m.email}</p>
-        <p><strong>País:</strong> ${m.pais}</p>
-        <p><strong>Telefone:</strong> ${m.telefone}</p>
+      <h3>${m.nome}</h3>
+      <p><b>Cargo:</b> ${m.cargo || ""}</p>
+      <p><b>Email:</b> ${m.email}</p>
+      <p><b>País:</b> ${m.pais}</p>
+      <p><b>Telefone:</b> ${m.telefone}</p>
 
-      <button onclick="abrirModal(
-        '${m._id}',
-        '${m.nome}',
-        '${m.email}',
-        '${m.cargo || ""}',
-        '${m.pais}',
-        '${m.telefone}'
-      )">Editar</button>
+      <button onclick='abrirModal(
+        ${JSON.stringify(m._id)},
+        ${JSON.stringify(m.nome)},
+        ${JSON.stringify(m.email)},
+        ${JSON.stringify(m.cargo || "")},
+        ${JSON.stringify(m.pais)},
+        ${JSON.stringify(m.telefone)}
+      )'>Editar</button>
 
       <button onclick="apagarMembro('${m._id}')">Eliminar</button>
+    </div>
+  `).join("");
+}
 
-      </div>
-    `).join("");
-  }
+// =============== CADASTRAR ==================
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const formData = new FormData(form);
 
-  // ✅ CADASTRAR MEMBRO
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(form);
-
-    await fetch(`${BACKEND_URL}/api/membros`, {
-      method: "POST",
-      body: formData
-    });
-
-    form.reset();
-    carregarMembros();
+  await fetch(`${BACKEND_URL}/api/membros`, {
+    method: "POST",
+    body: formData
   });
 
-  // ✅ APAGAR MEMBRO
-  async function apagarMembro(id) {
-    if (!confirm("Tem a certeza que quer eliminar este membro?")) return;
+  form.reset();
+  carregarMembros();
+});
 
-    await fetch(`${BACKEND_URL}/api/membros/${id}`, {
-      method: "DELETE"
-    });
+// =============== ELIMINAR ==================
+async function apagarMembro(id) {
+  if (!confirm("Deseja remover este membro?")) return;
 
-    carregarMembros();
-  }
-
-  // ✅ ABRIR MODAL
-  function abrirModal(id, nome, email, cargo, pais, telefone) {
-    modal.style.display = "flex";
-    formEditar.id.value = id;
-    formEditar.nome.value = nome;
-    formEditar.email.value = email;
-    formEditar.cargo.value = cargo;
-    formEditar.pais.value = pais;
-    formEditar.telefone.value = telefone;
-  }
-
-  // ✅ FECHAR MODAL
-  function fecharModal() {
-    modal.style.display = "none";
-  }
-
-  // ✅ EDITAR MEMBRO
-  formEditar.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const id = formEditar.id.value;
-
-    const body = {
-      nome: formEditar.nome.value,
-      email: formEditar.email.value,
-      cargo: formEditar.cargo.value,
-      pais: formEditar.pais.value,
-      telefone: formEditar.telefone.value
-    };
-
-    await fetch(`${BACKEND_URL}/api/membros/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-
-    fecharModal();
-    carregarMembros();
+  await fetch(`${BACKEND_URL}/api/membros/${id}`, {
+    method: "DELETE"
   });
 
   carregarMembros();
+}
+
+// =============== MODAL ==================
+function abrirModal(id, nome, email, cargo, pais, telefone) {
+  modal.style.display = "flex";
+  document.getElementById("editId").value = id;
+  document.getElementById("editNome").value = nome;
+  document.getElementById("editEmail").value = email;
+  document.getElementById("editCargo").value = cargo;
+  document.getElementById("editPais").value = pais;
+  document.getElementById("editTelefone").value = telefone;
+}
+
+function fecharModal() {
+  modal.style.display = "none";
+}
+
+// =============== EDITAR ==================
+document.getElementById("formEditar").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const id = document.getElementById("editId").value;
+
+  const body = {
+    nome: document.getElementById("editNome").value,
+    email: document.getElementById("editEmail").value,
+    cargo: document.getElementById("editCargo").value,
+    pais: document.getElementById("editPais").value,
+    telefone: document.getElementById("editTelefone").value
+  };
+
+  await fetch(`${BACKEND_URL}/api/membros/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+
+  fecharModal();
+  carregarMembros();
+});
+
+// =============== INICIAR ==================
+carregarMembros();
 </script>
 
-
-  <footer>
-    <p>&copy; 2025 Associação dos Filhos e Amigos de Luanda Bolama — Todos os direitos reservados</p>
-  </footer>
 </body>
 </html>
