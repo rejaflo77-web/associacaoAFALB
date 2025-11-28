@@ -103,9 +103,13 @@ const lista = document.getElementById("listaMembros");
 const modal = document.getElementById("modal");
 
 // =============== CARREGAR MEMBROS ==================
-async function carregarMembros() {
+
+  async function carregarMembros() {
   const res = await fetch(`${BACKEND_URL}/api/membros`);
   const membros = await res.json();
+  console.log("Membros recebidos:", membros); // <--- debug
+}
+
 
   lista.innerHTML = membros.map(m => `
     <div class="membro">
@@ -130,7 +134,7 @@ async function carregarMembros() {
       <button onclick="apagarMembro('${m._id}')">Eliminar</button>
     </div>
   `).join("");
-}
+
 
 // =============== CADASTRAR ==================
 form.addEventListener("submit", async (e) => {
