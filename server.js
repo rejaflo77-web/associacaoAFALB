@@ -51,23 +51,30 @@ const Membro = mongoose.model("Membro", MembroSchema);
 // ================== ROTAS ==================
 app.post("/api/membros", upload.single("foto"), async (req, res) => {
   try {
+    console.log("BODY RECEBIDO:", req.body);
+    console.log("FOTO RECEBIDA:", req.file);
+
     const novo = new Membro({
       nome: req.body.nome,
       email: req.body.email,
       cargo: req.body.cargo,
       pais: req.body.pais,
       telefone: req.body.telefone,
-      foto: req.file ? req.file.secure_url : null,
+      foto: req.file?.secure_url || ""
     });
 
     const salvo = await novo.save();
+
+    console.log("SALVO NO MONGO:", salvo);
+
     res.json(salvo);
 
   } catch (error) {
-    console.error("Erro ao criar membro:", error);
+    console.error("ERRO AO SALVAR:", error);
     res.status(500).json({ erro: "Erro ao criar membro" });
   }
 });
+
 
 app.get("/api/membros", async (req, res) => {
   const membros = await Membro.find();
