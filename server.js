@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -6,14 +7,14 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("cloudinary").v2;
 
-const app = express(); // ✅ ESTAVA A FALTAR
+const app = express();
 
-// Middlewares
+// ================== MIDDLEWARES ==================
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Configuração Cloudinary
+// ================== CLOUDINARY ==================
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.CLOUD_API_KEY,
@@ -30,12 +31,12 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage });
 
-// Conexão MongoDB
+// ================== MONGODB ==================
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB conectado com sucesso!"))
   .catch(err => console.error("❌ Erro MongoDB:", err));
 
-// ✅ MODEL ESTAVA A FALTAR
+// ================== MODEL ==================
 const MembroSchema = new mongoose.Schema({
   nome: String,
   email: String,
@@ -47,7 +48,7 @@ const MembroSchema = new mongoose.Schema({
 
 const Membro = mongoose.model("Membro", MembroSchema);
 
-// Rotas
+// ================== ROTAS ==================
 app.post("/api/membros", upload.single("foto"), async (req, res) => {
   try {
     const novo = new Membro({
@@ -56,8 +57,7 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
       cargo: req.body.cargo,
       pais: req.body.pais,
       telefone: req.body.telefone,
-      foto: req.file?.secure_url || null,
-
+      foto: req.file ? req.file.secure_url : null,
     });
 
     const salvo = await novo.save();
@@ -84,6 +84,7 @@ app.delete("/api/membros/:id", async (req, res) => {
   res.json({ message: "Removido com sucesso" });
 });
 
-// ✅ Porta correta para Render
+// ================== PORTA ==================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("✅ Servidor rodando na porta " + PORT));
+

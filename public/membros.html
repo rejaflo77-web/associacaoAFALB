@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -6,9 +5,10 @@
   <title>Membros de Associação dos Filhos e Amigos de Luanda - Bolama</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="menb.css" />
-  <link rel="icon" href="img/favicon.ico" type="image/x-icon">
-</head>
+  <link rel="icon" href="img/luand.png" type="image/png">
 
+
+</head>
 <body>
 
 <header>
@@ -66,7 +66,6 @@
 <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
   <div style="background:#fff; padding:20px; border-radius:10px; width:350px;">
     <h3>Editar Membro</h3>
-
     <form id="formEditar">
       <input type="hidden" id="editId" />
 
@@ -102,55 +101,59 @@ const form = document.getElementById("formMembro");
 const lista = document.getElementById("listaMembros");
 const modal = document.getElementById("modal");
 
-// =============== CARREGAR MEMBROS ==================
+// ================== CARREGAR MEMBROS ==================
+async function carregarMembros() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/membros`);
+    const membros = await res.json();
 
-  async function carregarMembros() {
-  const res = await fetch(`${BACKEND_URL}/api/membros`);
-  const membros = await res.json();
-  console.log("Membros recebidos:", membros); // <--- debug
+    lista.innerHTML = membros.map(m => `
+      <div class="membro">
+        <img src="${m.foto || 'https://via.placeholder.com/100'}" style="width:100px; height:100px; object-fit:cover" />
+        <h3>${m.nome}</h3>
+        <p><b>Cargo:</b> ${m.cargo || ""}</p>
+        <p><b>Email:</b> ${m.email}</p>
+        <p><b>País:</b> ${m.pais}</p>
+        <p><b>Telefone:</b> ${m.telefone}</p>
+
+        <button onclick="abrirModal(
+          '${m._id}',
+          '${m.nome}',
+          '${m.email}',
+          '${m.cargo || ""}',
+          '${m.pais}',
+          '${m.telefone}'
+        )">Editar</button>
+
+        <button onclick="apagarMembro('${m._id}')">Eliminar</button>
+      </div>
+      <hr>
+    `).join("");
+  } catch (err) {
+    console.error("Erro ao carregar membros:", err);
+  }
 }
 
-
-  lista.innerHTML = membros.map(m => `
-    <div class="membro">
-      <img src="${m.foto || 'https://via.placeholder.com/100'}"
-           style="width:100px; height:100px; object-fit:cover" />
-
-      <h3>${m.nome}</h3>
-      <p><b>Cargo:</b> ${m.cargo || ""}</p>
-      <p><b>Email:</b> ${m.email}</p>
-      <p><b>País:</b> ${m.pais}</p>
-      <p><b>Telefone:</b> ${m.telefone}</p>
-
-      <button onclick='abrirModal(
-        ${JSON.stringify(m._id)},
-        ${JSON.stringify(m.nome)},
-        ${JSON.stringify(m.email)},
-        ${JSON.stringify(m.cargo || "")},
-        ${JSON.stringify(m.pais)},
-        ${JSON.stringify(m.telefone)}
-      )'>Editar</button>
-
-      <button onclick="apagarMembro('${m._id}')">Eliminar</button>
-    </div>
-  `).join("");
-
-
-// =============== CADASTRAR ==================
+// ================== CADASTRAR ==================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const formData = new FormData(form);
 
-  await fetch(`${BACKEND_URL}/api/membros`, {
-    method: "POST",
-    body: formData
-  });
+  try {
+    await fetch(`${BACKEND_URL}/api/membros`, {
+      method: "POST",
+      body: formData
+    });
 
-  form.reset();
-  carregarMembros();
+    alert("Membro cadastrado com sucesso!");
+    form.reset();
+    carregarMembros();
+  } catch (err) {
+    alert("Erro ao cadastrar membro.");
+  }
 });
 
-// =============== ELIMINAR ==================
+// ================== ELIMINAR ==================
 async function apagarMembro(id) {
   if (!confirm("Deseja remover este membro?")) return;
 
@@ -161,7 +164,7 @@ async function apagarMembro(id) {
   carregarMembros();
 }
 
-// =============== MODAL ==================
+// ================== MODAL ==================
 function abrirModal(id, nome, email, cargo, pais, telefone) {
   modal.style.display = "flex";
   document.getElementById("editId").value = id;
@@ -176,7 +179,7 @@ function fecharModal() {
   modal.style.display = "none";
 }
 
-// =============== EDITAR ==================
+// ================== EDITAR ==================
 document.getElementById("formEditar").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -200,9 +203,8 @@ document.getElementById("formEditar").addEventListener("submit", async (e) => {
   carregarMembros();
 });
 
-// =============== INICIAR ==================
+// ================== INICIAR ==================
 carregarMembros();
 </script>
-
 </body>
 </html>
