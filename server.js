@@ -1,4 +1,3 @@
-// server.js
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -53,12 +52,7 @@ const Membro = mongoose.model("Membro", MembroSchema);
 // Criar membro
 app.post("/api/membros", upload.single("foto"), async (req, res) => {
   try {
-    console.log("=== BODY RECEBIDO ===", JSON.stringify(req.body, null, 2));
-    console.log("=== FILE RECEBIDO ===", JSON.stringify(req.file, null, 2));
-
-    if (!req.file) {
-      return res.status(400).json({ erro: "Foto obrigatória" });
-    }
+    if (!req.file) return res.status(400).json({ erro: "Foto obrigatória" });
 
     const novo = new Membro({
       nome: req.body.nome,
@@ -70,10 +64,9 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
     });
 
     const salvo = await novo.save();
-    console.log("✅ SALVO NO MONGO:", salvo);
     res.json(salvo);
   } catch (error) {
-    console.error("❌ ERRO AO SALVAR:", error);
+    console.error(error);
     res.status(500).json({ erro: "Erro ao criar membro", detalhes: error.message });
   }
 });
@@ -84,7 +77,6 @@ app.get("/api/membros", async (req, res) => {
     const membros = await Membro.find().sort({ createdAt: -1 });
     res.json(membros);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ erro: "Erro ao listar membros", detalhes: err.message });
   }
 });
@@ -96,7 +88,6 @@ app.put("/api/membros/:id", async (req, res) => {
     if (!atualizado) return res.status(404).json({ erro: "Membro não encontrado" });
     res.json(atualizado);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ erro: "Erro ao atualizar membro", detalhes: err.message });
   }
 });
@@ -108,7 +99,6 @@ app.delete("/api/membros/:id", async (req, res) => {
     if (!deletado) return res.status(404).json({ erro: "Membro não encontrado" });
     res.json({ message: "Removido com sucesso" });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ erro: "Erro ao deletar membro", detalhes: err.message });
   }
 });
@@ -116,3 +106,4 @@ app.delete("/api/membros/:id", async (req, res) => {
 // ================== PORTA ==================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("✅ Servidor rodando na porta " + PORT));
+
