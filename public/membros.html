@@ -6,8 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="menb.css" />
   <link rel="icon" href="img/luand.png" type="image/png">
-
-
 </head>
 <body>
 
@@ -89,59 +87,106 @@
     </form>
   </div>
 </div>
+
 <script>
 const BACKEND_URL = "https://associacaoafalb-4.onrender.com";
-
 const form = document.getElementById("formMembro");
 const lista = document.getElementById("listaMembros");
+const modal = document.getElementById("modal");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// ================== CARREGAR MEMBROS ==================
+async function carregarMembros() {
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/membros`);
+        const membros = await res.json();
+        lista.innerHTML = membros.map(m => `
+            <div class="membro">
+                <img src="${m.foto || 'https://via.placeholder.com/100'}" style="width:100px;height:100px;object-fit:cover">
+                <h3>${m.nome}</h3>
+                <p><b>Cargo:</b> ${m.cargo || ""}</p>
+                <p><b>Email:</b> ${m.email}</p>
+                <p><b>País:</b> ${m.pais}</p>
+                <p><b>Telefone:</b> ${m.telefone}</p>
+                <button onclick="abrirModal('${m._id}','${m.nome}','${m.email}','${m.cargo || ''}','${m.pais}','${m.telefone}')">Editar</button>
+                <button onclick="apagarMembro('${m._id}')">Eliminar</button>
+            </div>
+        `).join("");
+    } catch(err) {
+        console.error(err);
+    }
+}
 
-  const formData = new FormData(form);
+// ================== CADASTRAR MEMBRO ==================
+form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/membros`, { method: "POST", body: formData });
+        if(!res.ok) {
+            const erro = await res.json();
+            throw new Error(erro.detalhes || "Erro no servidor");
+        }
+        alert("Membro cadastrado com sucesso!");
+        form.reset();
+        carregarMembros();
+    } catch(err) {
+        console.error(err);
+        alert("Erro ao cadastrar: " + err.message);
+    }
+});
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/membros`, {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await res.json();
-    console.log("RESPOSTA DO BACKEND:", data);
-
-    alert("Membro cadastrado com sucesso!");
-    form.reset();
+// ================== EXCLUIR MEMBRO ==================
+async function apagarMembro(id){
+    if(!confirm("Deseja remover este membro?")) return;
+    await fetch(`${BACKEND_URL}/api/membros/${id}`, { method: "DELETE" });
     carregarMembros();
+}
 
-  } catch (err) {
-    console.error("Erro no envio:", err);
-    alert("Erro ao cadastrar!");
+// ================== MODAL ==================
+function abrirModal(id, nome, email, cargo, pais, telefone) {
+  modal.style.display = "flex";
+  document.getElementById("editId").value = id;
+  document.getElementById("editNome").value = nome;
+  document.getElementById("editEmail").value = email;
+  document.getElementById("editCargo").value = cargo;
+  document.getElementById("editPais").value = pais;
+  document.getElementById("editTelefone").value = telefone;
+}
+
+function fecharModal() {
+  modal.style.display = "none";
+}
+
+// ================== EDITAR MEMBRO ==================
+document.getElementById("formEditar").addEventListener("submit", async e => {
+  e.preventDefault();
+  const id = document.getElementById("editId").value;
+  const body = {
+    nome: document.getElementById("editNome").value,
+    email: document.getElementById("editEmail").value,
+    cargo: document.getElementById("editCargo").value,
+    pais: document.getElementById("editPais").value,
+    telefone: document.getElementById("editTelefone").value
+  };
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/membros/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) {
+      const erro = await res.json();
+      throw new Error(erro.erro || "Erro ao atualizar");
+    }
+    fecharModal();
+    carregarMembros();
+  } catch(err) {
+    console.error(err);
+    alert("Erro ao atualizar: " + err.message);
   }
 });
 
-
-async function carregarMembros() {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/membros`);
-    const membros = await res.json();
-
-    console.log("MEMBROS RECEBIDOS:", membros);
-
-    lista.innerHTML = membros.map(m => `
-      <div class="membro">
-        <img src="${m.foto}" width="100"/>
-        <h3>${m.nome}</h3>
-        <p>${m.email}</p>
-        <p>${m.pais}</p>
-        <p>${m.telefone}</p>
-      </div>
-    `).join("");
-
-  } catch (err) {
-    console.error("Erro ao carregar membros:", err);
-  }
-}
-
+// ================== INICIAR ==================
 carregarMembros();
 </script>
 
@@ -149,6 +194,5 @@ carregarMembros();
   <p>&copy; 2025 Associação dos Filhos e Amigos de Luanda Bolama</p>
 </footer>
 
-v
 </body>
 </html>

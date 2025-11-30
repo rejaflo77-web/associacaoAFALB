@@ -1,5 +1,5 @@
+// server.js
 require("dotenv").config();
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -38,21 +38,27 @@ mongoose.connect(process.env.MONGO_URI)
 
 // ================== MODEL ==================
 const MembroSchema = new mongoose.Schema({
-  nome: String,
-  email: String,
+  nome: { type: String, required: true },
+  email: { type: String, required: true },
   cargo: String,
-  pais: String,
-  telefone: String,
+  pais: { type: String, required: true },
+  telefone: { type: String, required: true },
   foto: String,
-});
+}, { timestamps: true });
 
 const Membro = mongoose.model("Membro", MembroSchema);
 
 // ================== ROTAS ==================
+
+// Criar membro
 app.post("/api/membros", upload.single("foto"), async (req, res) => {
   try {
-    console.log("BODY RECEBIDO:", req.body);
-    console.log("FOTO RECEBIDA:", req.file);
+    console.log("=== BODY RECEBIDO ===", JSON.stringify(req.body, null, 2));
+    console.log("=== FILE RECEBIDO ===", JSON.stringify(req.file, null, 2));
+
+    if (!req.file) {
+      return res.status(400).json({ erro: "Foto obrigatória" });
+    }
 
     const novo = new Membro({
       nome: req.body.nome,
@@ -60,38 +66,53 @@ app.post("/api/membros", upload.single("foto"), async (req, res) => {
       cargo: req.body.cargo,
       pais: req.body.pais,
       telefone: req.body.telefone,
-      foto: req.file?.secure_url || ""
+      foto: req.file.path || req.file.secure_url,
     });
 
     const salvo = await novo.save();
-
-    console.log("SALVO NO MONGO:", salvo);
-
+    console.log("✅ SALVO NO MONGO:", salvo);
     res.json(salvo);
-
   } catch (error) {
-    console.error("ERRO AO SALVAR:", error);
-    res.status(500).json({ erro: "Erro ao criar membro" });
+    console.error("❌ ERRO AO SALVAR:", error);
+    res.status(500).json({ erro: "Erro ao criar membro", detalhes: error.message });
   }
 });
 
-
+// Listar membros
 app.get("/api/membros", async (req, res) => {
-  const membros = await Membro.find();
-  res.json(membros);
+  try {
+    const membros = await Membro.find().sort({ createdAt: -1 });
+    res.json(membros);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: "Erro ao listar membros", detalhes: err.message });
+  }
 });
 
+// Editar membro
 app.put("/api/membros/:id", async (req, res) => {
-  await Membro.findByIdAndUpdate(req.params.id, req.body);
-  res.json({ message: "Atualizado com sucesso" });
+  try {
+    const atualizado = await Membro.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!atualizado) return res.status(404).json({ erro: "Membro não encontrado" });
+    res.json(atualizado);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: "Erro ao atualizar membro", detalhes: err.message });
+  }
 });
 
+// Deletar membro
 app.delete("/api/membros/:id", async (req, res) => {
-  await Membro.findByIdAndDelete(req.params.id);
-  res.json({ message: "Removido com sucesso" });
+  try {
+    const deletado = await Membro.findByIdAndDelete(req.params.id);
+    if (!deletado) return res.status(404).json({ erro: "Membro não encontrado" });
+    res.json({ message: "Removido com sucesso" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: "Erro ao deletar membro", detalhes: err.message });
+  }
 });
 
 // ================== PORTA ==================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("✅ Servidor rodando na porta " + PORT));
-
