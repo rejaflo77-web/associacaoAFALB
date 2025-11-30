@@ -132,7 +132,7 @@ async function carregarMembros() {
 form.addEventListener("submit", async e => {
   e.preventDefault();
   const formData = new FormData(form);
-
+/*
   try {
     const res = await fetch(`${BACKEND_URL}/api/membros`, {
       method: "POST",
@@ -151,8 +151,49 @@ form.addEventListener("submit", async e => {
   } catch (err) {
     console.error("Erro ao cadastrar:", err);
     alert("Erro ao cadastrar! " + err.message);
+  }*/
+
+  // exemplo robusto no frontend (substitua o trecho de envio)
+try {
+  const res = await fetch(`${BACKEND_URL}/api/membros`, {
+    method: "POST",
+    body: formData
+  });
+
+  const texto = await res.text(); // lemos texto sempre UMA vez
+
+  // se começar com '<' provavelmente é HTML (página de erro)
+  if (texto.trim().startsWith('<')) {
+    console.error("Resposta HTML recebida:", texto);
+    throw new Error("Servidor retornou HTML em vez de JSON. Verifique Network/Console.");
   }
+
+  // agora parse seguro
+  let data;
+  try {
+    data = JSON.parse(texto);
+  } catch (err) {
+    console.error("Não foi possível converter a resposta em JSON:", texto);
+    throw new Error("Resposta inválida do servidor");
+  }
+
+  if (!res.ok) {
+    throw new Error(data.message || "Erro no servidor");
+  }
+
+  alert("Membro cadastrado com sucesso!");
+  form.reset();
+  carregarMembros();
+
+} catch (err) {
+  console.error("Erro ao cadastrar:", err);
+  alert("Erro ao cadastrar! " + err.message);
+}
 });
+
+
+
+
 
 // ===============================
 // ✅ APAGAR MEMBRO
